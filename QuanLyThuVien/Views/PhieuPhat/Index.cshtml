@@ -1,0 +1,177 @@
+﻿@using QuanLyThuVien.Models
+@model IEnumerable<QuanLyThuVien.Models.PhieuPhat>
+
+@{
+    ViewData["Title"] = "Quản lý Phiếu phạt";
+
+    // Tính toán số liệu thống kê từ Model
+    var unpaidFines = Model.Where(f => !f.IsPaid).ToList();
+    var paidFines = Model.Where(f => f.IsPaid).ToList();
+
+    var totalUnpaidCount = unpaidFines.Count;
+    var totalUnpaidAmount = unpaidFines.Sum(f => f.TotalFine);
+
+    var totalPaidCount = paidFines.Count;
+    var totalPaidAmount = paidFines.Sum(f => f.TotalFine);
+
+    var totalCount = Model.Count();
+    var totalAmount = Model.Sum(f => f.TotalFine);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0">
+        <i class="bi bi-cash-coin me-2 text-primary"></i>Phiếu phạt
+    </h4>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2">
+        <i class="bi bi-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="border-left:4px solid #dc3545 !important;">
+            <div class="text-muted small">Chưa thanh toán</div>
+            <div class="fw-bold fs-5 text-danger">
+                @totalUnpaidCount phiếu
+            </div>
+            <div class="text-muted small">@totalUnpaidAmount.ToString("N0") VNĐ</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="border-left:4px solid #198754 !important;">
+            <div class="text-muted small">Đã thanh toán</div>
+            <div class="fw-bold fs-5 text-success">
+                @totalPaidCount phiếu
+            </div>
+            <div class="text-muted small">@totalPaidAmount.ToString("N0") VNĐ</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="border-left:4px solid #2e75b6 !important;">
+            <div class="text-muted small">Tổng cộng</div>
+            <div class="fw-bold fs-5 text-primary">@totalCount phiếu</div>
+            <div class="text-muted small">
+                @totalAmount.ToString("N0") VNĐ
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex gap-2 mb-3">
+    <a asp-action="Index"
+       class="btn btn-sm @(ViewBag.Status == null ? "btn-primary" : "btn-outline-secondary")">
+        Tất cả
+    </a>
+    <a asp-action="Index" asp-route-status="unpaid"
+       class="btn btn-sm @(ViewBag.Status == "unpaid" ? "btn-danger" : "btn-outline-danger")">
+        <i class="bi bi-x-circle me-1"></i>Chưa thanh toán
+    </a>
+    <a asp-action="Index" asp-route-status="paid"
+       class="btn btn-sm @(ViewBag.Status == "paid" ? "btn-success" : "btn-outline-success")">
+        <i class="bi bi-check-circle me-1"></i>Đã thanh toán
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr style="background:#f0f4f8; border-bottom:2px solid #d0dce8;">
+                        <th style="width:60px; padding:12px 16px;" class="text-muted">#</th>
+                        <th style="padding:12px 16px;">Thành viên</th>
+                        <th style="padding:12px 16px;">Sách mượn</th>
+                        <th style="width:120px; padding:12px 16px;" class="text-center">Số ngày trễ</th>
+                        <th style="width:140px; padding:12px 16px;" class="text-end">Tiền phạt</th>
+                        <th style="width:150px; padding:12px 16px;" class="text-center">Trạng thái</th>
+                        <th style="width:130px; padding:12px 16px;" class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                Không có dữ liệu phiếu phạt.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var fine in Model)
+                    {
+                        <tr>
+                            <td class="text-muted ps-3">@fine.FineId</td>
+                            <td>
+                                <div class="fw-semibold" style="font-size:0.9rem;">
+                                    @fine.Member?.FullName @* Giả định thuộc tính là HoTen *@
+                                </div>
+                                <div class="text-muted" style="font-size:0.78rem;">
+                                    ID: @fine.MemberId
+                                </div>
+                            </td>
+                            <td style="font-size:0.85rem;">
+                                @if (fine.BorrowRecord?.BorrowDetails != null)
+                                {
+                                    @foreach (var detail in fine.BorrowRecord.BorrowDetails)
+                                    {
+                                        <span class="badge rounded-pill me-1"
+                                              style="background:#e8f0fe; color:#1a56db; font-size:0.75rem;">
+                                            @detail.Book?.TenSach @* Giả định thuộc tính là TenSach *@
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">N/A</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-danger" style="font-size:0.82rem;">
+                                    @fine.OverdueDays ngày
+                                </span>
+                            </td>
+                            <td class="text-end fw-semibold" style="color:#c00000;">
+                                @fine.TotalFine.ToString("N0") VNĐ
+                            </td>
+                            <td class="text-center">
+                                @if (fine.IsPaid)
+                                {
+                                    <span class="badge bg-success">Đã thanh toán</span>
+                                    <div class="text-muted" style="font-size:0.72rem;">
+                                        @fine.PaidAt?.ToString("dd-MM-yyyy")
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Chưa thanh toán</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="Details" asp-route-id="@fine.FineId"
+                                   class="btn btn-sm btn-outline-secondary me-1" title="Xem chi tiết">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if (!fine.IsPaid)
+                                {
+                                    <form asp-action="MarkPaid" asp-route-id="@fine.FineId"
+                                          method="post" class="d-inline"
+                                          onsubmit="return confirm('Xác nhận đã thu @fine.TotalFine.ToString("N0") VNĐ?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-success" title="Xác nhận thanh toán">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

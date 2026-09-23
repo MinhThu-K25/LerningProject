@@ -1,0 +1,72 @@
+﻿@model QuanLyThuVien.Models.PhanLoaiSachs
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">THÊM MỚI PHÂN LOẠI</h4>
+        </div>
+        <div class="card-body">
+            <form asp-controller="PhanLoaiSachs" asp-action="AddPhanLoai" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Mã Phân Loại</label>
+                        <input asp-for="MaPhanLoaiSach" class="form-control" required />
+                        <span asp-validation-for="MaPhanLoaiSach" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Thể Loại</label>
+                        <input asp-for="TheLoai" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Tên Kệ</label>
+                        <input asp-for="TenKe" class="form-control" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Hàng</label>
+                        <input asp-for="Hang" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4 mb-3 text-center">
+                        <label class="form-label text-primary">Dãy Ngang</label>
+                        <input asp-for="DayNgang" type="number" class="form-control text-center" />
+                    </div>
+                    <div class="col-md-4 mb-3 text-center">
+                        <label class="form-label text-primary">Dãy Dọc</label>
+                        <input asp-for="DayDoc" type="number" class="form-control text-center" />
+                    </div>
+                    <div class="col-md-4 mb-3 text-center">
+                        <label class="form-label text-primary">Tầng</label>
+                        <input asp-for="Tang" type="number" class="form-control text-center" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Sức Chứa</label>
+                        <input asp-for="SucChua" type="number" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Trạng Thái</label>
+                        <select asp-for="TrangThai" class="form-select">
+                            <option value="Còn chỗ">Còn chỗ</option>
+                            <option value="Đầy">Đầy</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label class="form-label text-secondary">Ghi Chú (Mô tả)</label>
+                        <textarea asp-for="MoTa" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary px-4">Lưu Dữ Liệu</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy Bỏ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

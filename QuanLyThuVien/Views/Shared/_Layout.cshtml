@@ -1,0 +1,243 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using QuanLyThuVien.Models
+@inject UserManager<AppUser> UserManager
+@inject ApplicationDbContext DbContext
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var currentUserId = UserManager.GetUserId(User) ?? string.Empty;
+    // Sử dụng ?. để an toàn nếu DbContext hoặc Members bị null
+    bool isLinked = false;
+    if (!string.IsNullOrEmpty(currentUserId) && DbContext?.Members != null)
+    {
+        isLinked = await DbContext.Members.AnyAsync(m => m.UserId == currentUserId);
+    }
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Thư Viện</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a3c5e 0%, #2e75b6 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+            #sidebar .brand {
+                padding: 20px 16px;
+                color: white;
+                font-size: 1.1rem;
+                font-weight: 700;
+                border-bottom: 1px solid rgba(255,255,255,0.15);
+            }
+
+            #sidebar .nav-link {
+                color: rgba(255,255,255,0.8);
+                padding: 10px 20px;
+                border-radius: 6px;
+                margin: 4px 12px;
+                text-decoration: none;
+            }
+
+                #sidebar .nav-link:hover, #sidebar .nav-link.active {
+                    background: rgba(255,255,255,0.15);
+                    color: white;
+                }
+
+        /* ── Main content ── */
+        #main-content {
+            margin-left: 240px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* ── Topbar ── */
+        #topbar {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 24px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1050;
+            overflow: visible !important; /* QUAN TRỌNG: Không được để hidden */
+        }
+
+        /* Đảm bảo dropdown menu luôn nổi lên trên nội dung */
+        .dropdown-menu {
+            z-index: 2000 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .page-body {
+            padding: 24px;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="sidebar">
+        <div class="brand"><i class="bi bi-book-half me-2"></i>Thư Viện</div>
+        <div class="mt-2">
+            <div class="section-label" style="color:rgba(255,255,255,0.4); font-size:0.7rem; padding:10px 20px;">TỔNG QUAN</div>
+            <a class="nav-link" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="section-label" style="color:rgba(255,255,255,0.4); font-size:0.7rem; padding:10px 20px;">QUẢN LÝ</div>
+                <a class="nav-link" asp-controller="BookManagement" asp-action="Index"><i class="bi bi-journal-bookmarks me-2"></i> Sách</a>
+                <a class="nav-link" asp-controller="ThanhVien" asp-action="Index"><i class="bi bi-people me-2"></i> Thành viên</a>
+                <a class="nav-link" asp-controller="PhieuMuon" asp-action="Index"><i class="bi bi-arrow-left-right me-2"></i> Mượn / Trả</a>
+                <a class="nav-link" asp-controller="PhieuPhat" asp-action="Index"><i class="bi bi-arrow-left-right me-2"></i>Phiếu Phạt</a>
+                <a class="nav-link" asp-controller="PhanLoaiSachs" asp-action="Index"><i class="bi bi-arrow-left-right me-2"></i> Phân Loại Sách</a>
+                <div class="section-label" style="color:rgba(255,255,255,0.4); font-size:0.7rem; padding:10px 20px;">Báo cáo</div>
+                <a class="nav-link" asp-controller="BaoCao" asp-action="Index"><i class="bi bi-bar-chart-line"></i> Thống Kê</a>
+
+                
+            }
+            else
+            {
+                @if (isLinked)
+                {
+                    <div class="section-label" style="color:rgba(255,255,255,0.4); font-size:0.7rem; padding:10px 20px;">THÀNH VIÊN</div>
+                    <a class="nav-link" asp-controller="PhieuMuon" asp-action="MyHistory">
+                        <i class="bi bi-clock-history me-2"></i> Lịch sử mượn
+                    </a>
+                }
+            }
+        </div>
+    </nav>
+
+    <div id="main-content">
+        <div id="topbar">
+            <span class="page-title" style="font-weight:600; color:#1a3c5e;">@(ViewData["Title"] ?? "Trang chủ")</span>
+
+            <div class="d-flex align-items-center">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <div class="dropdown">
+                        @* Nút dropdown với thuộc tính chuẩn Bootstrap 5 *@
+                        <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2"
+                                type="button" id="userDropdown" aria-expanded="false">
+                            <div style="width:28px;height:28px;background:#2e75b6;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-person-fill text-white"></i>
+                            </div>
+                            <span>@User.Identity.Name</span>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userDropdown">
+                            <li class="px-3 py-2">
+                                <small class="text-muted text-uppercase" style="font-size:0.65rem;">Vai trò</small>
+                                <div class="fw-bold" style="color:#1a3c5e;">
+                                    <a class="nav-link" asp-controller="Account" asp-action="Index">
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <span>Quản trị viên</span>
+                                        }
+                                        else if (isLinked)
+    @* THÊM ĐIỀU KIỆN NÀY *@
+
+                                        {
+                                            <span>Thành viên</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted" style="font-weight:400;">Chưa liên kết</span>
+                                        }
+                                    </a>
+                                    
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                }
+            </div>
+        </div>
+
+        <div class="page-body">
+            @RenderBody()
+        </div>
+
+        <footer class="text-center text-muted py-3 border-top">
+            © @DateTime.Now.Year - Hệ thống Quản lý Thư viện
+        </footer>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // 1. Script đánh dấu menu active
+            const path = window.location.pathname.toLowerCase();
+            $('#sidebar .nav-link').each(function() {
+                const href = $(this).attr('href')?.toLowerCase();
+                if (href && (path === href || (href !== '/' && path.startsWith(href)))) {
+                    $(this).addClass('active');
+                }
+            });
+
+            // 2. Xử lý Dropdown thủ công hoàn toàn
+            $('#userDropdown').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Ngăn sự kiện nổi bọt
+
+                var $menu = $(this).next('.dropdown-menu');
+
+                // Đóng tất cả các menu khác (nếu có) và toggle menu này
+                $('.dropdown-menu').not($menu).removeClass('show');
+                $menu.toggleClass('show');
+
+                console.log("Dropdown đã được click!"); // Kiểm tra trong F12 Console
+            });
+
+            // Click ra ngoài để đóng menu
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown').length) {
+                    $('.dropdown-menu').removeClass('show');
+                }
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

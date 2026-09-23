@@ -1,0 +1,116 @@
+﻿@using QuanLyThuVien.Models
+@model IEnumerable<QuanLyThuVien.Models.PhieuMuon>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<AppUser> _userManager
+
+@{
+    ViewData["Title"] = "Lịch sử mượn";
+}
+
+<div class="container py-4">
+    <h4 class="fw-bold mb-4">
+        <i class="bi bi-clock-history me-2 text-primary"></i>Lịch sử mượn của tôi
+    </h4>
+
+    @if (ViewBag.NoMember == true)
+    {
+        <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Bạn chưa được liên kết với thẻ thành viên nào. Vui lòng liên hệ thủ thư để được cấp thẻ.
+        </div>
+    }
+@*     @if (ViewBag.NoMember == true)
+{
+    <div class="alert alert-warning">
+        ID của bạn là: <strong>@_userManager.GetUserId(User)</strong> <br/>
+        Vui lòng copy mã này dán vào cột UserId của bảng Members trong Database.
+    </div>
+} *@
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="padding:1.2rem 1rem;">Sách mượn</th>
+                        <th class="text-center">Ngày mượn</th>
+                        <th class="text-center">Hạn trả</th>
+                        <th class="text-center">Ngày trả</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end" style="padding-right: 1.5rem;">Phí phạt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <div class="mb-3">
+                                    <i class="bi bi-inbox fs-1 opacity-50"></i>
+                                </div>
+                                <span>Bạn chưa có lần mượn sách nào.</span>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var record in Model)
+                        {
+                            <tr>
+                                <td style="padding:1rem;">
+                                    @foreach (var detail in record.BorrowDetails!)
+                                    {
+                                        <div class="fw-semibold text-primary mb-1">
+                                            @detail.Book?.TenSach
+                                        </div>
+                                    }
+                                </td>
+                                <td class="text-center text-muted">
+                                    @record.BorrowDate.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center text-muted">
+                                    @record.DueDate.ToString("dd/MM/yyyy")
+                                </td>
+                                <td class="text-center">
+                                    @(record.ReturnDate?.ToString("dd/MM/yyyy") ?? "-")
+                                </td>
+                                <td class="text-center">
+                                    @if (record.ReturnDate != null)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success">Đã trả</span>
+                                    }
+                                    else if (DateTime.Now > record.DueDate)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger">Quá hạn</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary border border-primary">Đang mượn</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-bold text-danger" style="padding-right: 1.5rem;">
+                                    @if (record.FineRecord != null && record.FineRecord.TotalFine > 0)
+                                    {
+                                        @record.FineRecord.TotalFine.ToString("N0") <small>VNĐ</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fw-normal">0</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Tùy chỉnh màu sắc Badge giống ảnh mẫu */
+    .bg-success-subtle { background-color: #e8f5e9 !important; }
+    .bg-danger-subtle { background-color: #ffebee !important; }
+    .bg-primary-subtle { background-color: #e3f2fd !important; }
+    .table thead th { font-weight: 600; font-size: 0.9rem; color: #444; }
+</style>

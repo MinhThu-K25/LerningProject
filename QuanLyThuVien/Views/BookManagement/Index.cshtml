@@ -1,0 +1,241 @@
+﻿@model List<QuanLyThuVien.Models.BookManagement>
+@{
+    ViewData["Title"] = "Danh sách sách";
+}
+
+<style>
+    .header-container {
+        display: flex; /* Kích hoạt flexbox */
+        justify-content: space-between; /* Đẩy tiêu đề sang trái, nút sang phải */
+        align-items: center; /* Căn giữa theo chiều dọc */
+        margin-bottom: 20px; /* Tạo khoảng cách với bảng bên dưới */
+        border-bottom: 1px solid #eee; /* Thêm đường kẻ mờ (tùy chọn) */
+        padding-bottom: 10px;
+    }
+
+        .header-container h2 {
+            margin: 0; /* Xóa margin mặc định để không bị lệch hàng */
+            font-weight: bold;
+        }
+    /* Container bao ngoài sử dụng input-group của Bootstrap */
+    /* Container bao quanh form search */
+    .search-container {
+        max-width: 100%;
+        /* margin: 20px auto; /* Căn giữa */
+    }
+
+    .topbar-search {
+        display: flex;
+        align-items: stretch;
+        background: #fff;
+        border: 1px solid #dce1e6;
+        border-radius: 10px; /* Bo góc mềm mại */
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Đổ bóng nhẹ */
+        transition: all 0.3s ease;
+    }
+
+        /* Hiệu ứng khi nhấn vào thanh tìm kiếm */
+        .topbar-search:focus-within {
+            border-color: #2e75b6;
+            box-shadow: 0 4px 10px rgba(46, 117, 182, 0.15);
+        }
+
+        /* Tùy chỉnh ô nhập liệu */
+        .topbar-search .form-control {
+            border: none !important; /* Xóa bỏ border mặc định của bootstrap */
+            box-shadow: none !important;
+            height: 45px;
+            padding: 0 15px;
+            font-size: 0.95rem;
+            flex: 1;
+        }
+
+        /* Nút tìm kiếm */
+        .topbar-search .btn-search {
+            background-color: #2e75b6;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+            .topbar-search .btn-search:hover {
+                background-color: #1a3c5e;
+            }
+
+        /* Nút Xóa (X) */
+        .topbar-search .btn-clear {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+            .topbar-search .btn-clear:hover {
+                color: #e53e3e;
+            }
+         
+        
+</style>
+
+<div class="header-container">
+    <div class="search-container">
+        <form class="d-flex shadow-sm" role="search"
+              asp-controller="BookManagement"
+              asp-action="Index"
+              method="get"
+              style="border-radius: 10px; overflow: hidden; border: 1px solid #dce1e6; background-color: #fff; width: 100%; max-width: 500px;">
+
+            <input class="form-control border-0 shadow-none py-2 ps-3"
+                   type="search"
+                   name="searchString"
+                   placeholder="Tìm tên sách, tác giả..."
+                   value="@ViewBag.CurrentSearch"
+                   aria-label="Search"
+                   style="flex: 1; font-size: 0.95rem;">
+
+            @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+            {
+                <a asp-action="Index"
+                   class="btn btn-link text-muted d-flex align-items-center px-2 text-decoration-none"
+                   title="Xóa tìm kiếm"
+                   style="border: none; background: transparent;">
+                    <i class="bi bi-x-circle-fill" style="font-size: 1.1rem;"></i>
+                </a>
+            }
+
+            <button class="btn btn-primary border-0 px-4"
+                    type="submit"
+                    style="background-color: #2e75b6; border-radius: 0; font-weight: 500;">
+                <i class="bi bi-search me-1"></i> Tìm
+            </button>
+        </form>
+    </div>
+
+    @* <h2>Xem sách</h2> *@
+
+    <a asp-action="AddBooks" asp-route-id="MaSach" class="btn btn-sm btn-outline-primary" title="Thêm Sách">
+        <i class="fa-solid fa-pencil"></i> Thêm Sách Mới
+    </a>
+</div>
+
+<table class="table table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>#</th>
+            <th>Ảnh</th>
+            <th>Tên sách</th>
+            <th>Tác giả</th>
+            <th>Năm Xuất Bản</th>
+            <th>Tái Bản</th>
+            <th>Thể loại</th>
+            <th>Kho</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int stt = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@(stt++)</td>
+
+                    <td>
+                        @* Sửa ImageUrl -> AnhBiaSach *@
+                        <img src="@(!string.IsNullOrEmpty(item.AnhBiaSach) ? item.AnhBiaSach : "/images/no-image.png")"
+                             width="40"
+                             height="40"
+                             style="object-fit:cover;border-radius:6px;" />
+                    </td>
+                    
+                    <td>
+                        @* Sửa TenSach và NamXuatBan *@
+                        <strong>@item.TenSach</strong><br />
+                    </td>
+
+                    <td>@item.TacGia</td>
+                    <td>@item.NamXuatBan</td>
+                    <td>@item.TaiBan</td>
+                    <td>
+                        <span class="badge bg-primary">
+                            @item.TheLoai
+                        </span>
+                    </td>
+
+                    <td>@item.Kho</td>
+
+                    <td>
+                        @* Sửa route-id sang MaSach *@
+                        <a asp-action="EditBooks" asp-route-id="@item.MaSach"
+                           class="btn btn-sm btn-outline-primary">✏️</a>
+
+                        @* Sửa Id -> MaSach và Name -> TenSach *@
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                onclick="setDeleteData('@item.MaSach', '@item.TenSach')">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    Không có dữ liệu sách nào.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p><strong>Tổng cộng: @(Model?.Count ?? 0) cuốn sách</strong></p>
+
+@* --- Phần Modal và Script --- *@
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">⚠ Xác nhận xóa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fs-5 fw-bold text-danger">
+                    Bạn có chắc muốn xóa cuốn sách:
+                    <br />
+                    <span id="deleteName" class="text-dark"></span>
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <form asp-action="Delete" method="post">
+                    @* Quan trọng: name="id" phải khớp với tham số trong Controller *@
+                    <input type="hidden" id="deleteId" name="id" />
+                    <button type="submit" class="btn btn-danger">Xóa ngay</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setDeleteData(maSach, tenSach) {
+        document.getElementById("deleteId").value = maSach;
+        document.getElementById("deleteName").innerText = tenSach;
+    }
+</script>

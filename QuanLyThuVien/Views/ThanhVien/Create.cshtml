@@ -1,0 +1,108 @@
+﻿@model QuanLyThuVien.Models.ThanhVien
+
+@{
+    ViewData["Title"] = "Thêm thành viên";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a asp-action="Index" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+        <h4 class="fw-bold mt-2">
+            <i class="bi bi-person-plus-fill me-2 text-primary"></i>Thêm thành viên mới
+        </h4>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 fw-bold">Thông tin cá nhân & Liên hệ</h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Liên kết tài khoản <span class="text-danger">*</span></label>
+                                    <select name="selectedUserId" class="form-select" required>
+                                        <option value="">-- Chọn tài khoản --</option>
+                                        @foreach (var item in ViewBag.Users as IEnumerable<SelectListItem> ?? new List<SelectListItem>())
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
+                                    <div class="form-text text-muted">Chỉ hiển thị tài khoản chưa có thẻ thành viên.</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                                <input asp-for="FullName" class="form-control" placeholder="Nhập đầy đủ họ tên" required />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Địa chỉ Email</label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="name@example.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="09xxxxxxxx" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">CMND/CCCD</label>
+                                <input asp-for="CMND" class="form-control" placeholder="9 hoặc 12 chữ số" />
+                                <span asp-validation-for="CMND" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Ngày hết hạn thẻ</label>
+                                <input asp-for="ExpireDate" type="date" class="form-control"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                <div class="form-text small text-muted">Bỏ trống để mặc định có hạn 1 năm.</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-top d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                <i class="bi bi-check-lg me-1"></i> Lưu thành viên
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.1);
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .input-group-text {
+        color: #6b7280;
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

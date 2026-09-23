@@ -1,0 +1,491 @@
+﻿@model QuanLyThuVien.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard Thống Kê Tổng Hợp";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --primary-color: #4361ee;
+        --secondary-color: #3f37c9;
+        --success-color: #4cc9f0;
+        --bg-light: #f8f9fc;
+        --danger-soft: #fff5f5;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+        }
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.5rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    /* Period filter button group */
+    .period-filter .btn {
+        font-size: 0.75rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        border: 1px solid #dee2e6;
+        background: #fff;
+        color: #6c757d;
+        transition: all 0.2s;
+    }
+
+        .period-filter .btn.active,
+        .period-filter .btn:hover {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .period-filter .btn + .btn {
+            margin-left: 4px;
+        }
+
+    .card-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .loading-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #dee2e6;
+        border-top-color: var(--primary-color);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+        margin-left: 8px;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0 text-dark">@ViewData["Title"]</h3>
+            <p class="text-muted small">Dữ liệu cập nhật mới nhất từ hệ thống quản lý</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm d-flex align-items-center gap-2" onclick="window.print()">
+                <i class="bi bi-printer"></i> Xuất Báo Cáo
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">TỔNG SÁCH</p>
+                        <h3 class="fw-bold mb-0">@Model.TotalBooks.ToString("N0")</h3>
+                    </div>
+                    <div class="card-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-book"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">Trong kho thư viện</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">THÀNH VIÊN</p>
+                        <h3 class="fw-bold mb-0">@Model.TotalMembers.ToString("N0")</h3>
+                    </div>
+                    <div class="card-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-muted small">Người dùng đăng ký</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">ĐANG MƯỢN</p>
+                        <h3 class="fw-bold mb-0 text-info">@Model.BorrowingCount</h3>
+                    </div>
+                    <div class="card-icon bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-info small">Phiếu chưa hoàn trả</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-1 fw-bold">TIỀN PHẠT</p>
+                        <h3 class="fw-bold mb-0 text-danger">@Model.TotalFines.ToString("N0") VNĐ</h3>
+                    </div>
+                    <div class="card-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-danger small fw-bold">Tổng doanh thu phạt</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 15px;">
+                <div class="card-header-row">
+                    <div class="d-flex align-items-center">
+                        <h5 class="fw-bold mb-0">Hiệu suất Mượn Sách</h5>
+                        <div class="loading-spinner" id="spinnerBorrow"></div>
+                    </div>
+                    <div class="period-filter" id="filterBorrow">
+                        <button class="btn active" data-period="year" onclick="setPeriod('borrow','year',this)">Năm</button>
+                        <button class="btn" data-period="month" onclick="setPeriod('borrow','month',this)">Tháng</button>
+                        <button class="btn" data-period="week" onclick="setPeriod('borrow','week',this)">Tuần</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="borrowReturnChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 15px;">
+                <div class="card-header-row">
+                    <div class="d-flex align-items-center">
+                        <h5 class="fw-bold mb-0">Lý do bị Phạt</h5>
+                        <div class="loading-spinner" id="spinnerFine"></div>
+                    </div>
+                    <div class="period-filter" id="filterFine">
+                        <button class="btn active" data-period="year" onclick="setPeriod('fine','year',this)">Năm</button>
+                        <button class="btn" data-period="month" onclick="setPeriod('fine','month',this)">Tháng</button>
+                        <button class="btn" data-period="week" onclick="setPeriod('fine','week',this)">Tuần</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="fineReasonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="row g-4">
+        
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm table-container">
+                <div class="card-header bg-white border-0 py-3 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <h6 class="fw-bold mb-0 text-danger">
+                                <i class="bi bi-clock-history me-2"></i>Sách quá hạn chưa trả
+                            </h6>
+                            <div class="loading-spinner" id="spinnerOverdue"></div>
+                        </div>
+                        <div class="period-filter" id="filterOverdue">
+                            <button class="btn active" data-period="year" onclick="setPeriod('overdue','year',this)">Năm</button>
+                            <button class="btn" data-period="month" onclick="setPeriod('overdue','month',this)">Tháng</button>
+                            <button class="btn" data-period="week" onclick="setPeriod('overdue','week',this)">Tuần</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive" id="overdueTableWrapper">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light text-muted">
+                            <tr>
+                                <th class="ps-3">Bạn đọc</th>
+                                <th>Hạn trả</th>
+                                <th>Trễ</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="overdueTableBody">
+                            @if (Model.OverdueLoans != null && Model.OverdueLoans.Any())
+                            {
+                                foreach (var loan in Model.OverdueLoans)
+                                {
+                                    <tr>
+                                        <td class="ps-3">
+                                            <strong>@loan.Member?.FullName</strong><br />
+                                            <span class="text-muted small">Phiếu: #@loan.BorrowId</span>
+                                        </td>
+                                        <td>@loan.DueDate.ToString("dd-MM-yyyy")</td>
+                                        <td>
+                                            <span class="badge bg-danger bg-opacity-10 text-danger">
+                                                @((DateTime.Today - loan.DueDate).Days) ngày
+                                            </span>
+                                        </td>
+                                        <td><button class="btn btn-sm btn-light py-0 px-2"><i class="bi bi-bell"></i></button></td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Không có phiếu mượn nào quá hạn.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm table-container">
+                <div class="card-header bg-white border-0 py-3 px-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-receipt me-2"></i>Phiếu phạt mới nhất
+                            </h6>
+                            <div class="loading-spinner" id="spinnerRecent"></div>
+                        </div>
+                        <div class="period-filter" id="filterRecent">
+                            <button class="btn active" data-period="year" onclick="setPeriod('recent','year',this)">Năm</button>
+                            <button class="btn" data-period="month" onclick="setPeriod('recent','month',this)">Tháng</button>
+                            <button class="btn" data-period="week" onclick="setPeriod('recent','week',this)">Tuần</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Thành viên</th>
+                                <th>Số tiền</th>
+                                <th>Ngày tạo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentFinesBody">
+                            @foreach (var fine in Model.RecentFines)
+                            {
+                                <tr>
+                                    <td class="ps-3"><strong>@fine.Member?.FullName</strong></td>
+                                    <td class="fw-bold text-danger">@fine.TotalFine.ToString("N0")đ</td>
+                                    <td class="text-muted">@fine.CreatedAt.ToString("dd/MM/yy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =============================================
+    // DỮ LIỆU KHỞI TẠO TỪ MODEL
+    // =============================================
+    const initialMonthlyData = @Html.Raw(Json.Serialize(Model.MonthlyBorrowData));
+    const initialFineReason  = @Html.Raw(Json.Serialize(Model.FineReasonData));
+
+    // =============================================
+    // KHỞI TẠO BIỂU ĐỒ
+    // =============================================
+    let borrowChart, fineChart;
+
+    function initBorrowChart(labels, data) {
+        const ctx = document.getElementById('borrowReturnChart').getContext('2d');
+        if (borrowChart) borrowChart.destroy();
+        borrowChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số lượt mượn',
+                    data: data,
+                    borderColor: '#4361ee',
+                    backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', align: 'end' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    function initFineChart(data) {
+        const ctx = document.getElementById('fineReasonChart').getContext('2d');
+        if (fineChart) fineChart.destroy();
+        fineChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Quá hạn', 'Mất sách', 'Hư hỏng'],
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#4361ee', '#f72585', '#4cc9f0'],
+                    borderWidth: 5,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '75%'
+            }
+        });
+    }
+
+    // Label mặc định theo Năm (12 tháng)
+    const yearLabels  = ['Th.1','Th.2','Th.3','Th.4','Th.5','Th.6','Th.7','Th.8','Th.9','Th.10','Th.11','Th.12'];
+    initBorrowChart(yearLabels, initialMonthlyData);
+    initFineChart(initialFineReason);
+
+    // =============================================
+    // HÀM XỬ LÝ FILTER
+    // =============================================
+    function setPeriod(section, period, btn) {
+        // Cập nhật active button
+        const group = {
+            borrow:  document.getElementById('filterBorrow'),
+            fine:    document.getElementById('filterFine'),
+            overdue: document.getElementById('filterOverdue'),
+            recent:  document.getElementById('filterRecent')
+        }[section];
+
+        group.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Gọi AJAX tương ứng
+        switch (section) {
+            case 'borrow':  loadBorrowChart(period);  break;
+            case 'fine':    loadFineChart(period);    break;
+            case 'overdue': loadOverdueTable(period); break;
+            case 'recent':  loadRecentFines(period);  break;
+        }
+    }
+
+    function showSpinner(id) { document.getElementById(id).style.display = 'inline-block'; }
+    function hideSpinner(id) { document.getElementById(id).style.display = 'none'; }
+
+    // --- BIỂU ĐỒ MƯỢN SÁCH ---
+    async function loadBorrowChart(period) {
+        showSpinner('spinnerBorrow');
+        try {
+            const res  = await fetch(`/Dashboard/GetBorrowData?period=${period}`);
+            const json = await res.json();
+            initBorrowChart(json.labels, json.data);
+        } catch (e) { console.error(e); }
+        finally { hideSpinner('spinnerBorrow'); }
+    }
+
+    // --- BIỂU ĐỒ LÝ DO PHẠT ---
+    async function loadFineChart(period) {
+        showSpinner('spinnerFine');
+        try {
+            const res  = await fetch(`/Dashboard/GetFineReasonData?period=${period}`);
+            const json = await res.json();
+            initFineChart(json.data);
+        } catch (e) { console.error(e); }
+        finally { hideSpinner('spinnerFine'); }
+    }
+
+    // --- BẢNG SÁCH QUÁ HẠN ---
+    async function loadOverdueTable(period) {
+        showSpinner('spinnerOverdue');
+        try {
+            const res   = await fetch(`/Dashboard/GetOverdueLoans?period=${period}`);
+            const loans = await res.json();
+            const tbody = document.getElementById('overdueTableBody');
+
+            if (!loans || loans.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">Không có phiếu mượn nào quá hạn.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = loans.map(loan => {
+                const dueDate = new Date(loan.dueDate);
+                const days    = Math.floor((new Date() - dueDate) / 86400000);
+                return `<tr>
+                    <td class="ps-3">
+                        <strong>${loan.memberName}</strong><br>
+                        <span class="text-muted small">Phiếu: #${loan.borrowId}</span>
+                    </td>
+                    <td>${dueDate.toLocaleDateString('vi-VN')}</td>
+                    <td><span class="badge bg-danger bg-opacity-10 text-danger">${days} ngày</span></td>
+                    <td><button class="btn btn-sm btn-light py-0 px-2"><i class="bi bi-bell"></i></button></td>
+                </tr>`;
+            }).join('');
+        } catch (e) { console.error(e); }
+        finally { hideSpinner('spinnerOverdue'); }
+    }
+
+    // --- BẢNG PHIẾU PHẠT MỚI NHẤT ---
+    async function loadRecentFines(period) {
+        showSpinner('spinnerRecent');
+        try {
+            const res   = await fetch(`/Dashboard/GetRecentFines?period=${period}`);
+            const fines = await res.json();
+            const tbody = document.getElementById('recentFinesBody');
+
+            if (!fines || fines.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-muted">Không có phiếu phạt.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = fines.map(f => {
+                const date = new Date(f.createdAt).toLocaleDateString('vi-VN', { day:'2-digit', month:'2-digit', year:'2-digit' });
+                return `<tr>
+                    <td class="ps-3"><strong>${f.memberName}</strong></td>
+                    <td class="fw-bold text-danger">${f.totalFine.toLocaleString('vi-VN')}đ</td>
+                    <td class="text-muted">${date}</td>
+                </tr>`;
+            }).join('');
+        } catch (e) { console.error(e); }
+        finally { hideSpinner('spinnerRecent'); }
+    }
+</script>

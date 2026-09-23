@@ -1,0 +1,180 @@
+﻿@{
+    ViewData["Title"] = "Đăng Nhập";
+    Layout = null;
+}
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+
+<style>
+    body 
+    {
+        background-color: #e3f2fd; /* Màu nền blue nhẹ */
+        font-family: 'Inter', sans-serif;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+    .register-card {
+        background: #fff;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-width: 900px;
+        width: 100%;
+        /* display: flex; */
+        min-height: 550px;
+    }
+
+    /* Phần hình ảnh bên trái */
+    .register-image {
+        background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=1000'); /* Bạn có thể thay bằng link ảnh thư viện của mình */
+        background-size: cover;
+        background-position: center;
+        width: 45%;
+        display: none; /* Ẩn ở màn hình nhỏ */
+    }
+
+    /* Phần Form bên phải */
+    .register-form-container {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .form-control {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+        .form-control:focus {
+            background-color: #fff;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+            border-color: #0d6efd;
+        }
+
+    .btn-register {
+        background-color: #0d6efd;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .header-title {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+        .header-title h2 {
+            font-weight: 700;
+            color: #333;
+        }
+
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 0.9rem;
+    }
+    /* Đảm bảo input-group khớp với bo góc của form-control */
+    .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .input-group-text {
+        border: 1px solid #e9ecef;
+        border-left: none;
+        margin-bottom: 0; /* Ghi đè margin-bottom của form-control nếu cần */
+    }
+
+    /* Hiệu ứng khi focus vào ô mật khẩu thì icon cũng đổi màu nhẹ */
+    .input-group:focus-within .input-group-text {
+        border-color: #0d6efd;
+        background-color: #fff !important;
+    }
+</style>
+
+    <div class="container d-flex justify-content-center">
+        <div class="register-card">
+            <div class="register-image"></div>
+
+            <div class="register-form-container">
+                <div class="header-title">
+                    <h2>Đăng Nhập</h2>
+                    <p class="text-muted">Hệ thống Quản lý Thư viện</p>
+                </div>
+
+            <form asp-controller="Account" asp-action="Login" method="post">
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control" placeholder="example@email.com" required>
+                    </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mật khẩu</label>
+                    <div class="input-group">
+                        <input name="password" id="password" type="password" class="form-control mb-0" placeholder="••••••••" required>
+                        <span class="input-group-text" id="togglePassword" style="cursor: pointer; border-radius: 0 8px 8px 0; background-color: #f8f9fa;">
+                            <i class="bi bi-eye-slash" id="eyeIcon"></i>
+                        </span>
+                    </div>
+                </div>
+                @* Sửa lại class nút bấm cho đồng bộ với CSS của bạn hoặc dùng Bootstrap *@
+                <button type="submit" class="btn btn-primary w-100" style="padding: 12px; border-radius: 8px; font-weight: 600;">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+                </button>
+
+                <div class="text-center mt-3" style="font-size:0.85rem;">
+                    Chưa có tài khoản?
+                    <a asp-controller="Account" asp-action="Register" class="text-primary fw-semibold">
+                        Đăng ký ngay
+                    </a>
+                </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    togglePassword.addEventListener('click', function () {
+        // Chuyển đổi kiểu input
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+
+        // Thay đổi icon (mắt mở / mắt đóng)
+        eyeIcon.classList.toggle('bi-eye');
+        eyeIcon.classList.toggle('bi-eye-slash');
+    });
+</script>
+
+@* ### Tại sao lại phải đặt ở cuối trang?
+
+1.  **Tốc độ tải trang:** Trình duyệt sẽ tải và hiển thị toàn bộ giao diện HTML/CSS cho người dùng thấy trước, sau đó mới tải JavaScript. Điều này giúp người dùng không phải nhìn màn hình trắng trong khi đợi tải script.
+2.  **Tránh lỗi Logic:** Đoạn script xử lý "con mắt" cần tìm các phần tử như `#password` hay `#togglePassword`. Nếu bạn đặt script lên đầu trang, lúc đó trình duyệt chưa kịp đọc đến phần HTML ở dưới, script sẽ không tìm thấy các nút này và gây lỗi "null".
+
+**Lưu ý nhỏ:** Trong ASP.NET Core, nếu bạn sử dụng file Layout chung (`_Layout.cshtml`), đoạn này thường được đặt sẵn ở cuối file Layout đó rồi. Nhưng vì ở đầu file bạn khai báo `Layout = null;` (tức là trang này chạy độc lập), nên bạn **bắt buộc** phải chèn thủ công như hướng dẫn ở trên nhé! *@

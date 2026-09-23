@@ -1,0 +1,103 @@
+﻿@model QuanLyThuVien.Models.ThanhVien
+
+@{
+    ViewData["Title"] = "Cập nhật thành viên";
+}
+
+<div class="container py-4">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <a asp-action="Index" class="text-decoration-none text-muted small">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+            <h4 class="fw-bold mt-2 mb-0">
+                <i class="bi bi-pencil-square me-2 text-primary"></i>Cập nhật thành viên: #@Model.MemberId
+            </h4>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="MemberId" />
+                        <input type="hidden" asp-for="JoinDate" />
+                        <input type="hidden" asp-for="IsActive" />
+                        <input type="hidden" asp-for="UserId" />
+
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 fw-bold">Thông tin cá nhân & Liên hệ</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                                <input asp-for="FullName" class="form-control" required />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Địa chỉ Email</label>
+                                <input asp-for="Email" type="email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">CMND/CCCD</label>
+                                <input asp-for="CMND" class="form-control" placeholder="9 hoặc 12 chữ số" />
+                                <span asp-validation-for="CMND" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Ngày hết hạn thẻ</label>
+                                <input asp-for="ExpireDate" type="date" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="mt-5 pt-3 border-top d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                <i class="bi bi-save me-1"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.1);
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .input-group-text {
+        color: #6b7280;
+    }
+
+    .form-control[readonly] {
+        color: #6b7280;
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

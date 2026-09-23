@@ -1,0 +1,126 @@
+﻿@model QuanLyThuVien.Models.BookManagement
+@{
+    ViewData["Title"] = "Sửa sách";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-bold border-0" style="background:#f0f4f8;">
+                <i class="bi bi-pencil-square me-1 text-primary"></i> Sửa thông tin sách
+            </div>
+            <div class="card-body">
+                <form asp-action="EditBooks" enctype="multipart/form-data" method="post">
+                    @Html.AntiForgeryToken()
+
+                    @* Khóa chính dùng để định danh bản ghi khi lưu *@
+                    <input type="hidden" asp-for="MaSach" />
+
+                    <div class="row g-3">
+                        @* Hiển thị ảnh bìa hiện tại *@
+                        <div class="col-12 text-center mb-2">
+                            <label class="form-label fw-semibold d-block">Ảnh bìa hiện tại</label>
+                            <img id="previewImage"
+                                 src="@(!string.IsNullOrEmpty(Model.AnhBiaSach) ? Model.AnhBiaSach : "/images/no-image.png")"
+                                 alt="cover"
+                                 style="height:150px; border-radius:8px; object-fit:cover; border: 1px solid #dee2e6;" />
+
+                            @* Quan trọng: Giữ lại đường dẫn cũ *@
+                            <input type="hidden" asp-for="AnhBiaSach" />
+                        </div>
+
+
+                        @* Mã Sách (Hiển thị nhưng không cho sửa vì là Key) *@
+                        <div class="col-md-4">
+                            <label asp-for="MaSach" class="form-label fw-semibold"></label>
+                            <input class="form-control bg-light" value="@Model.MaSach" disabled />
+                        </div>
+
+                        @* Tên Sách *@
+                        <div class="col-md-8">
+                            <label asp-for="TenSach" class="form-label fw-semibold"></label>
+                            <input asp-for="TenSach" class="form-control" />
+                            <span asp-validation-for="TenSach" class="text-danger small"></span>
+                        </div>
+
+                        @* Tác Giả *@
+                        <div class="col-md-6">
+                            <label asp-for="TacGia" class="form-label fw-semibold"></label>
+                            <input asp-for="TacGia" class="form-control" />
+                        </div>
+
+                        @* Thể Loại *@
+                        <div class="col-md-6">
+                            <label asp-for="TheLoai" class="form-label fw-semibold"></label>
+                            <input asp-for="TheLoai" class="form-control" />
+                        </div>
+
+                        @* Nhà Xuất Bản *@
+                        <div class="col-md-6">
+                            <label asp-for="NhaXuatBan" class="form-label fw-semibold"></label>
+                            <input asp-for="NhaXuatBan" class="form-control" />
+                        </div>
+
+                        @* Năm Xuất Bản *@
+                        <div class="col-md-3">
+                            <label asp-for="NamXuatBan" class="form-label fw-semibold"></label>
+                            <input asp-for="NamXuatBan" class="form-control" />
+                        </div>
+
+                        @* Tái Bản *@
+                        <div class="col-md-3">
+                            <label asp-for="TaiBan" class="form-label fw-semibold"></label>
+                            <input asp-for="TaiBan" class="form-control" />
+                        </div>
+
+                        @* Kho *@
+                        <div class="col-md-6">
+                            <label asp-for="Kho" class="form-label fw-semibold"></label>
+                            <input asp-for="Kho" class="form-control" />
+                        </div>
+
+                        @* Chọn ảnh mới *@
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Thay đổi ảnh bìa</label>
+                            <input type="file" id="fileInput" name="fileAnh" class="form-control" accept="image/*" />
+                        </div>
+
+                        @* Mô Tả Nội Dung *@
+                        <div class="col-12">
+                            <label asp-for="MoTaNoiDung" class="form-label fw-semibold"></label>
+                            <textarea asp-for="MoTaNoiDung" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-1"></i> Lưu thay đổi
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const previewImage = document.getElementById('previewImage');
+
+        if (fileInput) {
+            fileInput.onchange = function (evt) {
+                const [file] = this.files;
+                if (file) {
+                    // Cập nhật ảnh ngay lập tức
+                    previewImage.src = URL.createObjectURL(file);
+                    console.log("Đã đổi ảnh xem trước!");
+                }
+            };
+        }
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,122 @@
+﻿@model QuanLyThuVien.Models.PhieuMuon
+
+@{
+    ViewData["Title"] = "Chi tiết phiếu mượn";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-3">
+        <h5 class="fw-bold mb-0 text-primary">Chi tiết phiếu mượn</h5>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                        <i class="bi bi-file-earmark-text text-primary fs-4"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0">Chi tiết phiếu mượn #@Model.BorrowId</h4>
+                </div>
+
+                @switch (Model.Status)
+                {
+                    case "Borrowing":
+                        <span class="badge bg-info text-dark px-3 py-2">Đang mượn</span>
+                        break;
+                    case "Overdue":
+                        <span class="badge bg-danger px-3 py-2">Quá hạn</span>
+                        break;
+                    case "Returned":
+                        <span class="badge bg-success px-3 py-2">Đã trả</span>
+                        break;
+                }
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25">
+                        <small class="text-muted d-block mb-1">Thành viên</small>
+                        <h5 class="fw-bold mb-0">@Model.Member?.FullName</h5>
+                        <p class="text-muted small mb-0">MBR-@Model.MemberId.ToString("D4")</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25">
+                        <small class="text-muted d-block mb-1">Ngày mượn</small>
+                        <h5 class="fw-bold mb-0">@Model.BorrowDate.ToString("dd-MM-yyyy")</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 border rounded-3 h-100 bg-light bg-opacity-25">
+                        <small class="text-muted d-block mb-1">Hạn trả</small>
+                        <h5 class="fw-bold mb-0">@Model.DueDate.ToString("dd-MM-yyyy")</h5>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Status == "Returned" && Model.ReturnDate.HasValue)
+            {
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="p-3 border border-success border-opacity-25 rounded-3 bg-success bg-opacity-10">
+                            <small class="text-success fw-bold d-block mb-1">Ngày trả thực tế</small>
+                            <h5 class="fw-bold text-success mb-0">@Model.ReturnDate.Value.ToString("dd-MM-yyyy")</h5>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="mt-4">
+                <h6 class="fw-bold mb-3">Sách trong phiếu</h6>
+                <div class="table-responsive">
+                    <table class="table align-middle border-top">
+                        <thead>
+                            <tr class="text-muted">
+                                <th style="width: 60%">Tên sách</th>
+                                <th class="text-center">Số lượng mượn</th>
+                                <th class="text-center">Đã trả</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in Model.BorrowDetails)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold">@detail.Book?.TenSach</div>
+                                    </td>
+                                    <td class="text-center">@detail.Quantity</td>
+                                    <td class="text-center">
+                                        <span class="badge @(detail.ReturnedQty == detail.Quantity ? "bg-success" : "bg-warning") rounded-pill px-3">
+                                            @detail.ReturnedQty / @detail.Quantity
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="mt-3 p-3 bg-light rounded border">
+                    <small class="text-muted fw-bold d-block mb-1">Ghi chú:</small>
+                    <div class="small">@Model.Notes</div>
+                </div>
+            }
+
+            <div class="mt-4 border-top pt-3">
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                    <i class="bi bi-arrow-left me-2"></i>Quay lại
+                </a>
+                @if (Model.Status != "Returned")
+                {
+                    <a asp-action="Return" asp-route-id="@Model.BorrowId" class="btn btn-success px-4 ms-2">
+                        <i class="bi bi-box-arrow-in-left me-2"></i>Xử lý trả sách
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

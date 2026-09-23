@@ -1,0 +1,121 @@
+@model IEnumerable<QuanLyThuVien.Models.PhanLoaiSachs>
+
+@{
+    ViewData["Title"] = "Quản Lý Phân Loại Sách";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+
+        <div class="col-md-6 text-end">
+            <a asp-action="AddPhanLoai" class="btn btn-outline-primary title="Thêm Sách">
+                <i class="fa-solid fa-plus-circle me-1"></i> Thêm Vị Trí Sách
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-3">Mã Loại</th>
+                            <th>Thể Loại</th>
+                            <th>Tên Kệ</th>
+                            <th class="text-center">Tầng</th>
+                            <th class="text-center">Sức Chứa</th>
+                            <th class="text-center">Ghi Chú</th>
+                            <th>Trạng Thái</th>
+                            <th class="text-center">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr id="row-@item.MaPhanLoaiSach">
+                                <td class="ps-3 fw-bold text-secondary">@item.MaPhanLoaiSach</td>
+                                <td><span class="badge bg-info text-dark">@item.TheLoai</span></td>
+                                <td>
+                                    <div><strong>@item.TenKe</strong></div>
+                                    <small class="text-muted">Hàng: @item.Hang</small>
+                                </td>
+                 
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-light text-dark border">Tầng @item.Tang</span>
+                                </td>
+                                <td class="text-center">@item.SucChua</td>
+                                <td class="text-center">@item.MoTa</td>
+
+                                <td>
+                                    @if (item.TrangThai == "Sẵn sàng" || item.TrangThai == "Còn chỗ")
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success">@item.TrangThai</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger border border-danger">@item.TrangThai</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="EditPhanLoai" asp-route-id="@item.MaPhanLoaiSach"
+                                           class="btn btn-sm btn-outline-primary" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="deletePhanLoai('@item.MaPhanLoaiSach')" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <script>
+        function deletePhanLoai(id) {
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: "Dữ liệu mã " + id + " sẽ bị xóa vĩnh viễn!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6e7881',
+                confirmButtonText: 'Đồng ý xóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeletePhanLoai", "PhanLoaiSachs")',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                // Xóa dòng đó khỏi bảng với hiệu ứng mờ dần
+                                $('#row-' + id).fadeOut(400, function() {
+                                    $(this).remove();
+                                });
+                                Swal.fire('Đã xóa!', 'Bản ghi đã được loại bỏ thành công.', 'success');
+                            } else {
+                                Swal.fire('Lỗi!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Lỗi!', 'Không thể kết nối đến máy chủ.', 'error');
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+}

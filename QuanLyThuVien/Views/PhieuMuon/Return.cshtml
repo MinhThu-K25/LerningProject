@@ -1,0 +1,138 @@
+﻿@model QuanLyThuVien.Models.PhieuMuon
+@{
+    ViewData["Title"] = "Trả sách";
+    // Tính toán số ngày trễ hạn
+    var overdueDays = (DateTime.Today - Model.DueDate.Date).Days;
+    var fineAmount = overdueDays > 0 ? overdueDays * 5000 : 0;
+    // Giả định phí phạt là 2.000 VNĐ / ngày
+    
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+            <div class="mb-3">
+                <h4 class="fw-bold mb-0">Trả sách</h4>
+            </div>
+
+            <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                <div class="card-header py-3 border-0 d-flex align-items-center" style="background: #f8fafc;">
+                    <i class="bi bi-box-arrow-in-left me-2 text-success fs-5"></i>
+                    <span class="fw-bold text-dark">Xử lý trả sách — Phiếu #@Model.BorrowId</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="p-3 rounded mb-4" style="background:#f8fafc; border: 1px solid #edf2f7;">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">Thành viên:</small>
+                                <strong class="text-dark">@Model.Member?.FullName</strong>
+                            </div>
+                            <div class="col-3 text-center">
+                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">Hạn trả:</small>
+                                <strong class="@(overdueDays > 0 ? "text-danger" : "text-success")">
+                                    @Model.DueDate.ToString("dd-MM-yyyy")
+                                </strong>
+                            </div>
+                            <div class="col-3 text-end">
+                                <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem;">Hôm nay:</small>
+                                <strong class="text-dark">@DateTime.Today.ToString("dd-MM-yyyy")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (overdueDays > 0)
+                    {
+                        <div class="alert border-0 py-3 mb-4" style="background-color: #fff5f5; color: #c53030; border-radius: 8px;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                                <div>
+                                    <div class="fw-bold">Trả trễ hạn @overdueDays ngày</div>
+                                    <div class="small">Phí phạt dự kiến: <strong class="fs-6">@fineAmount.ToString("N0") VNĐ</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert border-0 py-3 mb-4 d-flex align-items-center" style="background-color: #f0fff4; color: #2f855a; border-radius: 8px;">
+                            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                            <div class="fw-semibold">Trả đúng hạn — Không có phí phạt.</div>
+                        </div>
+                    }
+
+                    <div class="mb-4">
+                        <label class="fw-bold text-dark mb-2" style="font-size: 0.95rem;">Sách sẽ được trả:</label>
+                        <div class="list-group list-group-flush border rounded">
+                            @if (Model.BorrowDetails != null && Model.BorrowDetails.Any())
+                            {
+                                foreach (var detail in Model.BorrowDetails)
+                                {
+                                    <div class="list-group-item d-flex align-items-center py-2 px-3">
+                                        <i class="bi bi-book me-2 text-primary"></i>
+                                        <span class="text-dark" style="font-size: 0.9rem;">@detail.Book?.TenSach</span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="list-group-item text-muted italic small">Không có thông tin sách.</div>
+                            }
+                        </div>
+                    </div>
+
+                    <form asp-action="Return" asp-route-id="@Model.BorrowId" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-muted small text-uppercase">Ghi chú</label>
+                            <input type="text" name="notes" class="form-control"
+                                   placeholder="Ghi chú thêm (nếu có)..." value="@Model.Notes" />
+                        </div>
+
+                        @* Tìm đoạn này và thay thế *@
+                        @{
+                            bool isLocked = (Model.Status == "Overdue") || (Model.FineRecord != null && !Model.FineRecord.IsPaid);
+                        }
+
+                        <div class="d-flex gap-2">
+                            @if (isLocked)
+                            {
+                                <div class="alert alert-danger w-100 py-2 mb-0 shadow-sm">
+                                    <i class="bi bi-lock-fill me-2"></i>
+                                    <strong>Thông báo:</strong> Phiếu mượn quá hạn hoặc có tiền phạt chưa thanh toán. Vui lòng xử lý phiếu phạt trước.
+                                </div>
+                                <button type="button" class="btn btn-secondary px-4 py-2" disabled>
+                                    <i class="bi bi-x-circle me-2"></i>Không thể trả
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-success px-4 py-2 fw-semibold shadow-sm">
+                                    <i class="bi bi-check-lg me-2"></i>Xác nhận trả sách
+                                </button>
+                                <a asp-action="Index" class="btn btn-light border px-4 py-2 fw-semibold text-muted">Hủy</a>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f4f7f6;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #2f855a;
+    }
+</style>

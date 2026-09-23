@@ -1,0 +1,14 @@
+# OS & IDE
+.vs/
+QuanLyThuVienDB.sql
+
+# .NET Build Output
+QuanLyThuVien/bin/
+QuanLyThuVien/obj/
+
+# Environment & Secrets
+**/appsettings.Development.json
+# Upload files
+**/wwwroot/uploads/
+
+
